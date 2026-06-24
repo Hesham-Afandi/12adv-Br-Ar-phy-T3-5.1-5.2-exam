@@ -3,491 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> فيزياء الصف الثاني عشر - التيار والمقاومات</title>
+    <title>⚡ Grade 12 Advanced Physics - Electric Current & Resistance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; }
+        body.en-mode { font-family: 'Inter', sans-serif; }
         .correct { background-color: #dcfce7 !important; border-color: #16a34a !important; }
         .incorrect { background-color: #fee2e2 !important; border-color: #dc2626 !important; }
-        .formula { font-family: 'Times New Roman', serif; font-style: italic; direction: ltr; display: inline-block; }
+        .formula { font-family: 'Times New Roman', serif; letter-spacing: 0.5px; direction: ltr; display: inline-block; font-style: italic; }
         .timer-warning { color: #dc2626 !important; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.7; } }
         @media print { .no-print { display: none !important; } }
-        .success-badge { 
-            display: inline-block; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-weight: bold;
-            font-size: 0.875rem;
-        }
+        .success-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.875rem; }
         .grade-excellent { background: #dcfce7; color: #166534; }
         .grade-good { background: #fef3c7; color: #92400e; }
         .grade-pass { background: #dbeafe; color: #1e40af; }
         .grade-fail { background: #fee2e2; color: #991b1b; }
+        .lang-switch {
+            position: fixed; top: 16px; left: 16px; z-index: 100;
+            background: white; padding: 6px; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; gap: 4px;
+            border: 2px solid #4f46e5;
+        }
+        [dir="ltr"] .lang-switch { left: auto; right: 16px; }
+        .lang-btn {
+            padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold;
+            transition: all 0.3s; border: none; font-size: 0.875rem;
+            background: transparent; color: #6b7280;
+        }
+        .lang-btn.active { background: #4f46e5; color: white; box-shadow: 0 2px 6px rgba(79,70,229,0.4); }
+        .lang-btn:hover:not(.active) { background: #eef2ff; color: #4f46e5; }
+        .shuffle-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-4 md:p-8 min-h-screen">
 
-    <!-- Timer -->
+    <div class="lang-switch no-print">
+        <button class="lang-btn active" onclick="setLanguage('ar')" id="btn-ar">عربي</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+    </div>
+
     <div id="timer-container" class="max-w-4xl mx-auto mb-4 text-center no-print">
         <div class="bg-white p-4 rounded-xl shadow-md inline-block border-2 border-indigo-100">
-            <span class="text-gray-600 ml-2">⏱️ الوقت المتبقي:</span>
+            <span class="text-gray-600 ml-2" data-ar="⏱️ الوقت المتبقي:" data-en="⏱️ Time Remaining:">⏱️ الوقت المتبقي:</span>
             <span id="timer" class="text-2xl font-bold text-indigo-600 font-mono">60:00</span>
+            <span class="shuffle-badge" data-ar="🔀 أسئلة عشوائية" data-en="🔀 Random Questions">🔀 أسئلة عشوائية</span>
         </div>
     </div>
 
-    <!-- Controls -->
     <div class="max-w-4xl mx-auto mb-6 flex flex-wrap gap-3 justify-center no-print">
-        <button onclick="toggleAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            👁️ إظهار / إخفاء الإجابات النموذجية
-        </button>
-        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            🖨️ طباعة / حفظ كـ PDF
-        </button>
+        <button onclick="toggleAnswers()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="👁️ إظهار / إخفاء الإجابات" data-en="👁️ Show / Hide Answers">👁️ إظهار / إخفاء الإجابات</button>
+        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🖨️ طباعة / PDF" data-en="🖨️ Print / PDF">🖨️ طباعة / PDF</button>
+        <button onclick="reshuffleExam()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🔀 إعادة خلط الأسئلة" data-en="🔀 Reshuffle Questions">🔀 إعادة خلط الأسئلة</button>
     </div>
 
-    <!-- Header -->
     <header class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8 border-r-4 border-indigo-600">
         <div class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2"> فيزياء الصف الثاني عشر المتقدم</h1>
-            <h2 class="text-lg text-indigo-600 font-semibold">الجزء الأول والثاني: التيار الكهربي والمقاومات وقانون أوم</h2>
-            <p class="text-sm text-gray-600 mt-2">Electric Current, Resistance, EMF & Ohm's Law</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2" data-ar="⚡ فيزياء الصف الثاني عشر المتقدم" data-en="⚡ Grade 12 Advanced Physics">⚡ فيزياء الصف الثاني عشر المتقدم</h1>
+            <h2 class="text-lg text-indigo-600 font-semibold" data-ar="التيار الكهربي، المقاومات، وقانون أوم" data-en="Electric Current, Resistance & Ohm's Law">التيار الكهربي، المقاومات، وقانون أوم</h2>
+            <p class="text-sm text-gray-600 mt-2" data-ar="كثافة التيار، المقاومة النوعية، القوة الدافعة، القدرة الكهربية" data-en="Current Density, Resistivity, EMF & Electric Power">كثافة التيار، المقاومة النوعية، القوة الدافعة، القدرة الكهربية</p>
+            <p class="text-xs text-orange-600 mt-2 font-semibold" data-ar="⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة" data-en="⚠️ Note: Questions and options are randomly shuffled on every page refresh">⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة</p>
         </div>
         <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-            <span>📅 التاريخ: <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
-            <span>👤 الاسم: <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="أدخل الاسم"></span>
-            <span>⏱️ المدة: 60 دقيقة</span>
-            <span>📊 المجموع: 100 درجة</span>
+            <span><span data-ar="📅 التاريخ:" data-en="📅 Date:">📅 التاريخ:</span> <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
+            <span><span data-ar="👤 الاسم:" data-en="👤 Name:">👤 الاسم:</span> <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="Enter name"></span>
+            <span><span data-ar="🏫 الشعبة:" data-en="🏫 Class:">🏫 الشعبة:</span> <input type="text" id="studentClass" class="border-b border-gray-400 bg-transparent w-28 text-center" placeholder="Class"></span>
+            <span><span data-ar="⏱️ المدة: 60 دقيقة" data-en="⏱️ Duration: 60 min">⏱️ المدة: 60 دقيقة</span></span>
+            <span><span data-ar="📊 المجموع: 100 درجة" data-en="📊 Total: 100 pts">📊 المجموع: 100 درجة</span></span>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto space-y-8">
+    <main class="max-w-4xl mx-auto space-y-8" id="exam-content"></main>
 
-        <!-- Section 1: التيار الكهربي -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الأول: التيار الكهربي وكثافة التيار</h2>
-            <ol id="section1-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-1">
-                    <strong>1.</strong> ما هو تعريف التيار الكهربي (i)؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="a" class="ml-2"> أ) معدل تدفق الشحنة الكهربية عبر مقطع الموصل</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="b" class="ml-2"> ب) سرعة الإلكترونات في الموصل</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="c" class="ml-2"> ج) المقاومة الكهربية للموصل</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="d" class="ml-2"> د) الجهد الكهربي بين طرفي الموصل</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) i = dq/dt</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-2">
-                    <strong>2.</strong> وحدة قياس التيار الكهربي في النظام الدولي هي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="a" class="ml-2"> أ) الفولت (V)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="b" class="ml-2"> ب) الأمبير (A)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="c" class="ml-2"> ج) الأوم (Ω)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="d" class="ml-2"> د) الكولوم (C)</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-3">
-                    <strong>3.</strong> إذا مرّت شحنة مقدارها 0.123C في زمن قدره 879 ثانية، فما قيمة التيار؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="a" class="ml-2"> أ) 0.14 mA</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="b" class="ml-2"> ب) 14 mA</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="c" class="ml-2"> ج) 1.4 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="d" class="ml-2"> د) 0.014 A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) i = q/t = 0.123/879 = 0.14 × 10⁻³ A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-4">
-                    <strong>4.</strong> كثافة التيار الكهربي (J) تُعرَّف بأنها:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="a" class="ml-2"> أ) التيار الكهربي لكل وحدة حجم</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="b" class="ml-2"> ب) التيار الكهربي لكل وحدة مساحة عرضية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="c" class="ml-2"> ج) التيار الكهربي لكل وحدة طول</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="d" class="ml-2"> د) التيار الكهربي لكل وحدة زمن</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) J = i/A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-5">
-                    <strong>5.</strong> سرعة الانجراف (v_d) للإلكترونات في الموصلات النموذجية تكون تقريباً:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="a" class="ml-2"> أ) قريبة من سرعة الضوء (10⁸ m/s)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="b" class="ml-2"> ب) حوالي 10⁻⁴ m/s (بطيئة جداً)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="c" class="ml-2"> ج) حوالي 10⁴ m/s</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="d" class="ml-2"> د) تساوي صفر</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-            </ol>
-        </section>
+    <div class="text-center no-print pb-8 mt-8">
+        <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📝 تسليم وتصحيح الامتحان" data-en="📝 Submit & Grade Exam">📝 تسليم وتصحيح الامتحان</button>
+    </div>
 
-        <!-- Section 2: المقاومات -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثاني: المقاومات الكهربية</h2>
-            <ol id="section2-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-6">
-                    <strong>6.</strong> المقاومة الكهربية (R) تتناسب:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="a" class="ml-2"> أ) طردياً مع الطول وعكسياً مع مساحة المقطع العرضي</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="b" class="ml-2"> ب) عكسياً مع الطول وطردياً مع مساحة المقطع</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="c" class="ml-2"> ج) طردياً مع كل من الطول والمساحة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="d" class="ml-2"> د) عكسياً مع كل من الطول والمساحة</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) R = ρL/A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-7">
-                    <strong>7.</strong> المقاومة النوعية (ρ) تعتمد على:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="a" class="ml-2"> أ) أبعاد الموصل فقط</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="b" class="ml-2"> ب) نوع المادة ودرجة الحرارة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="c" class="ml-2"> ج) التيار المار فقط</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="d" class="ml-2"> د) الجهد المطبق فقط</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-8">
-                    <strong>8.</strong> سلك نحاسي طوله 2m ومساحة مقطعه 1mm². إذا كانت المقاومة النوعية للنحاس 1.7×10⁻⁸ Ω·m، فما مقاومته؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="a" class="ml-2"> أ) 0.034 Ω</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="b" class="ml-2"> ب) 3.4×10⁻⁸ Ω</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="c" class="ml-2"> ج) 1.7×10⁻⁸ Ω</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="d" class="ml-2"> د) 0.017 Ω</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) R = ρL/A = (1.7×10⁻⁸ × 2)/(1×10⁻⁶) = 0.034 Ω</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-9">
-                    <strong>9.</strong> إذا تضاعف طول الموصل مع ثبات باقي العوامل، ماذا يحدث للمقاومة؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="a" class="ml-2"> أ) تبقى ثابتة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="b" class="ml-2"> ب) تنقص للنصف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="c" class="ml-2"> ج) تتضاعف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="d" class="ml-2"> د) تزيد 4 أضعاف</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-10">
-                    <strong>10.</strong> الموصلات الأومية (Ohmic) هي التي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="a" class="ml-2"> أ) مقاومتها تتغير مع التيار</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="b" class="ml-2"> ب) مقاومتها ثابتة وتخضع لقانون أوم</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="c" class="ml-2"> ج) لا توصل التيار إطلاقاً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="d" class="ml-2"> د) مقاومتها تساوي صفر</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 3: قانون أوم والقوة الدافعة -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثالث: قانون أوم والقوة الدافعة الكهربية</h2>
-            <ol id="section3-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-11">
-                    <strong>11.</strong> قانون أوم يُعبَّر عنه بالمعادلة:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="a" class="ml-2"> أ) V = I/R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="b" class="ml-2"> ب) V = IR</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="c" class="ml-2"> ج) I = R/V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="d" class="ml-2"> د) R = I/V</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-12">
-                    <strong>12.</strong> القوة الدافعة الكهربية (ε) للبطارية هي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="a" class="ml-2"> أ) الجهد الطرفي عندما يمر تيار</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="b" class="ml-2"> ب) أقصى فرق جهد بين قطبي البطارية عند عدم مرور تيار</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="c" class="ml-2"> ج) المقاومة الداخلية للبطارية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="d" class="ml-2"> د) التيار المار في الدائرة</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-13">
-                    <strong>13.</strong> الجهد الطرفي للبطارية (V) يُحسب من العلاقة:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="a" class="ml-2"> أ) V = ε + Ir</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="b" class="ml-2"> ب) V = ε - Ir</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="c" class="ml-2"> ج) V = ε × Ir</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="d" class="ml-2"> د) V = ε/Ir</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-14">
-                    <strong>14.</strong> بطارية قوتها الدافعة 12V ومقاومتها الداخلية 0.5Ω، إذا سحب منها تيار 2A، فما الجهد الطرفي؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="a" class="ml-2"> أ) 13 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="b" class="ml-2"> ب) 12 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="c" class="ml-2"> ج) 11 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="d" class="ml-2"> د) 10 V</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج) V = ε - Ir = 12 - (2×0.5) = 11V</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-15">
-                    <strong>15.</strong> الجهد الطرفي للبطارية يكون دائماً:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="a" class="ml-2"> أ) أكبر من القوة الدافعة الكهربية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="b" class="ml-2"> ب) مساوياً للقوة الدافعة الكهربية دائماً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="c" class="ml-2"> ج) أقل من القوة الدافعة الكهربية عند مرور تيار</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="d" class="ml-2"> د) صفراً دائماً</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 4: القدرة الكهربية -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الرابع: القدرة الكهربية والطاقة</h2>
-            <ol id="section4-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-16">
-                    <strong>16.</strong> القدرة الكهربية (P) تُحسب بجميع العلاقات التالية ما عدا:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="a" class="ml-2"> أ) P = VI</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="b" class="ml-2"> ب) P = I²R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="c" class="ml-2"> ج) P = V²/R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="d" class="ml-2"> د) P = V/I</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: د) العلاقة الخاطئة</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-17">
-                    <strong>17.</strong> مصباح مقاومته 240Ω متصل بمصدر جهد 120V. ما التيار المار فيه؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="a" class="ml-2"> أ) 0.5 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="b" class="ml-2"> ب) 2 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="c" class="ml-2"> ج) 28800 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="d" class="ml-2"> د) 120 A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) I = V/R = 120/240 = 0.5 A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-18">
-                    <strong>18.</strong> سخان كهربي قدرته 1500W يعمل على جهد 220V. ما التيار الذي يسحبه؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="a" class="ml-2"> أ) 0.15 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="b" class="ml-2"> ب) 6.82 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="c" class="ml-2"> ج) 330000 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="d" class="ml-2"> د) 1500 A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) I = P/V = 1500/220 ≈ 6.82 A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-19">
-                    <strong>19.</strong> الطاقة الكهربية المستهلكة (E) تُحسب من العلاقة:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="a" class="ml-2"> أ) E = P/t</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="b" class="ml-2"> ب) E = Pt</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="c" class="ml-2"> ج) E = P + t</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="d" class="ml-2"> د) E = V/I</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) E = Pt = VIt = I²Rt</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-20">
-                    <strong>20.</strong> إذا مر تيار 3A في مقاومة 10Ω لمدة 5 دقائق، فما الطاقة المستهلكة؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="a" class="ml-2"> أ) 150 J</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="b" class="ml-2"> ب) 27000 J</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="c" class="ml-2"> ج) 1500 J</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="d" class="ml-2"> د) 450 J</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) E = I²Rt = 3² × 10 × 300 = 27000 J</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="text-center no-print pb-8">
-            <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📝 تسليم وتصحيح الامتحان
-            </button>
-        </div>
-    </main>
-
-    <!-- Results Panel -->
     <div id="results-panel" class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-2xl shadow-2xl border-t-4 border-emerald-500 hidden no-print">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">📊 نتائج الامتحان</h2>
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center" data-ar="📊 نتائج الامتحان" data-en="📊 Exam Results">📊 نتائج الامتحان</h2>
         <div class="grid md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-blue-50 p-4 rounded-xl text-center"><p>اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
-            <div class="bg-purple-50 p-4 rounded-xl text-center"><p>التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
-            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p>المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><p data-ar="اسم الطالب" data-en="Student Name">اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
+            <div class="bg-purple-50 p-4 rounded-xl text-center"><p data-ar="التاريخ" data-en="Date">التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
+            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p data-ar="المجموع" data-en="Score">المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
         </div>
-
-        <!-- Success Rate Badge -->
         <div class="text-center mb-6">
-            <span id="success-badge" class="success-badge grade-excellent">ممتاز - 100%</span>
+            <span id="success-badge" class="success-badge grade-excellent">-</span>
             <p id="success-percent" class="text-4xl font-bold text-emerald-600 mt-2">100%</p>
-            <p class="text-sm text-gray-500">نسبة النجاح</p>
+            <p class="text-sm text-gray-500" data-ar="نسبة النجاح" data-en="Success Rate">نسبة النجاح</p>
         </div>
-
-        <!-- Performance Breakdown -->
         <div class="bg-gray-50 p-6 rounded-xl mb-6">
-            <h3 class="font-bold text-lg mb-4 text-gray-800">📈 تفصيل الأداء حسب القسم:</h3>
+            <h3 class="font-bold text-lg mb-4 text-gray-800" data-ar="📈 تفصيل الأداء حسب القسم:" data-en="📈 Performance Breakdown:">📈 تفصيل الأداء حسب القسم:</h3>
             <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">التيار الكهربي وكثافة التيار</span>
-                    <span id="sec1-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">المقاومات الكهربية</span>
-                    <span id="sec2-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">قانون أوم والقوة الدافعة</span>
-                    <span id="sec3-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">القدرة الكهربية والطاقة</span>
-                    <span id="sec4-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="التيار الكهربي وكثافة التيار" data-en="Electric Current & Current Density">التيار الكهربي وكثافة التيار</span><span id="sec1-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="المقاومات الكهربية" data-en="Electric Resistance">المقاومات الكهربية</span><span id="sec2-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="قانون أوم والقوة الدافعة" data-en="Ohm's Law & EMF">قانون أوم والقوة الدافعة</span><span id="sec3-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="القدرة الكهربية والطاقة" data-en="Electric Power & Energy">القدرة الكهربية والطاقة</span><span id="sec4-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="تطبيقات شاملة" data-en="Comprehensive Applications">تطبيقات شاملة</span><span id="sec5-score" class="font-bold text-indigo-600">0/4</span></div>
             </div>
         </div>
-
-        <!-- Email Send Button -->
         <div class="text-center mb-6">
-            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📧 إرسال النتائج للمعلم
-            </button>
+            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📧 إرسال النتائج للمعلم" data-en="📧 Send Results to Teacher">📧 إرسال النتائج للمعلم</button>
             <p id="emailStatus" class="text-sm mt-2 text-center font-medium"></p>
         </div>
-
         <div class="flex gap-3 justify-center">
-            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold">🖨️ طباعة النتائج</button>
+            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold" data-ar="🖨️ طباعة النتائج" data-en="🖨️ Print Results">🖨️ طباعة النتائج</button>
         </div>
     </div>
 
     <footer class="max-w-4xl mx-auto mt-10 mb-8 text-center text-gray-500 text-sm no-print">
-        ©الفيزياء للصف الثاني عشر المتقدم | الدرس 5.1-5.2  | Mr. Mohammed Hesham
+        © <span data-ar="الفيزياء للصف 12 متقدم | التيار والمقاومات" data-en="Grade 12 Advanced Physics | Current & Resistance">الفيزياء للصف 12 متقدم | التيار والمقاومات</span> | Mr. Mohammed Hesham
     </footer>
 
-    <script>
-        // EmailJS Configuration
-        const PUBLIC_KEY = "Rb3Lq8tXaFmc5YHUH";
-        const SERVICE_ID = "service_w15m64i";
-        const TEMPLATE_ID = "template_5b0u2tq";
-        const TARGET_EMAIL = "mohammedhesham872@gmail.com";
-
-        (function(){ emailjs.init(PUBLIC_KEY); })();
-
-        // Timer functionality
-        let timeRemaining = 3600; // 60 minutes in seconds
-        let timerInterval;
-
-        function startTimer() {
-            document.getElementById('timer-container').style.display = 'block';
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                const timerEl = document.getElementById('timer');
-                timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-                
-                if (timeRemaining <= 300) {
-                    timerEl.classList.add('timer-warning');
-                }
-                
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    alert("انتهى الوقت! سيتم تسليم الامتحان تلقائياً.");
-                    gradeExam();
-                }
-            }, 1000);
+<script>
+const originalExamData = {
+    sections: [
+        {
+            id: 'sec1',
+            title: { ar: '🔹 الجزء الأول: التيار الكهربي وكثافة التيار', en: '🔹 Part 1: Electric Current & Current Density' },
+            questions: [
+                { q: { ar: 'ما هو تعريف التيار الكهربي <span class="math">(i)</span>؟', en: 'What is the definition of electric current <span class="math">(i)</span>?' }, options: [{ ar: 'معدل تدفق الشحنة الكهربية عبر مقطع الموصل', en: 'Rate of flow of electric charge through a conductor cross-section' }, { ar: 'سرعة الإلكترونات في الموصل', en: 'Speed of electrons in the conductor' }, { ar: 'المقاومة الكهربية للموصل', en: 'Electric resistance of the conductor' }, { ar: 'الجهد الكهربي بين طرفي الموصل', en: 'Electric potential difference across the conductor' }], correct: 0, answer: { ar: 'i = dq/dt (الشحنة المارة في وحدة الزمن)', en: 'i = dq/dt (charge passing per unit time)' } },
+                { q: { ar: 'إذا مرّت شحنة مقدارها <span class="math">0.123 C</span> في زمن قدره <span class="math">879 s</span>، فما قيمة التيار؟', en: 'If charge <span class="math">0.123 C</span> passes in <span class="math">879 s</span>, what is the current?' }, options: [{ ar: '<span class="math">0.14 mA</span>', en: '<span class="math">0.14 mA</span>' }, { ar: '<span class="math">14 mA</span>', en: '<span class="math">14 mA</span>' }, { ar: '<span class="math">1.4 A</span>', en: '<span class="math">1.4 A</span>' }, { ar: '<span class="math">0.014 A</span>', en: '<span class="math">0.014 A</span>' }], correct: 0, answer: { ar: 'i = q/t = 0.123/879 = 0.14 × 10⁻³ A = 0.14 mA', en: 'i = q/t = 0.123/879 = 0.14 × 10⁻³ A = 0.14 mA' } },
+                { q: { ar: 'كثافة التيار الكهربي <span class="math">(J)</span> تُعرَّف بأنها:', en: 'Current density <span class="math">(J)</span> is defined as:' }, options: [{ ar: 'التيار الكهربي لكل وحدة حجم', en: 'Electric current per unit volume' }, { ar: 'التيار الكهربي لكل وحدة مساحة عرضية', en: 'Electric current per unit cross-sectional area' }, { ar: 'التيار الكهربي لكل وحدة طول', en: 'Electric current per unit length' }, { ar: 'التيار الكهربي لكل وحدة زمن', en: 'Electric current per unit time' }], correct: 1, answer: { ar: 'J = i/A (أمبير/م²)', en: 'J = i/A (A/m²)' } },
+                { q: { ar: 'سرعة الانجراف <span class="math">(v_d)</span> للإلكترونات في الموصلات النموذجية تكون تقريباً:', en: 'The drift velocity <span class="math">(v_d)</span> of electrons in typical conductors is approximately:' }, options: [{ ar: 'قريبة من سرعة الضوء <span class="math">(10⁸ m/s)</span>', en: 'Close to speed of light <span class="math">(10⁸ m/s)</span>' }, { ar: 'حوالي <span class="math">10⁻⁴ m/s</span> (بطيئة جداً)', en: 'About <span class="math">10⁻⁴ m/s</span> (very slow)' }, { ar: 'حوالي <span class="math">10⁴ m/s</span>', en: 'About <span class="math">10⁴ m/s</span>' }, { ar: 'تساوي صفراً', en: 'Equals zero' }], correct: 1, answer: { ar: 'سرعة الانجراف بطيئة جداً (≈ 0.1 mm/s) بسبب التصادمات المتكررة', en: 'Drift velocity is very slow (≈ 0.1 mm/s) due to frequent collisions' } }
+            ]
+        },
+        {
+            id: 'sec2',
+            title: { ar: '🔹 الجزء الثاني: المقاومات الكهربية', en: '🔹 Part 2: Electric Resistance' },
+            questions: [
+                { q: { ar: 'المقاومة الكهربية <span class="math">(R)</span> تتناسب:', en: 'Electric resistance <span class="math">(R)</span> is proportional to:' }, options: [{ ar: 'طردياً مع الطول وعكسياً مع مساحة المقطع العرضي', en: 'Directly with length and inversely with cross-sectional area' }, { ar: 'عكسياً مع الطول وطردياً مع مساحة المقطع', en: 'Inversely with length and directly with cross-sectional area' }, { ar: 'طردياً مع كل من الطول والمساحة', en: 'Directly with both length and area' }, { ar: 'عكسياً مع كل من الطول والمساحة', en: 'Inversely with both length and area' }], correct: 0, answer: { ar: 'R = ρL/A (ρ: المقاومة النوعية)', en: 'R = ρL/A (ρ: resistivity)' } },
+                { q: { ar: 'سلك نحاسي طوله <span class="math">2 m</span> ومساحة مقطعه <span class="math">1 mm²</span>. إذا كانت <span class="math">ρ = 1.7×10⁻⁸ Ω·m</span>، فما مقاومته؟', en: 'A copper wire of length <span class="math">2 m</span> and cross-section <span class="math">1 mm²</span>. If <span class="math">ρ = 1.7×10⁻⁸ Ω·m</span>, what is its resistance?' }, options: [{ ar: '<span class="math">0.034 Ω</span>', en: '<span class="math">0.034 Ω</span>' }, { ar: '<span class="math">3.4×10⁻⁸ Ω</span>', en: '<span class="math">3.4×10⁻⁸ Ω</span>' }, { ar: '<span class="math">1.7×10⁻⁸ Ω</span>', en: '<span class="math">1.7×10⁻⁸ Ω</span>' }, { ar: '<span class="math">0.017 Ω</span>', en: '<span class="math">0.017 Ω</span>' }], correct: 0, answer: { ar: 'R = ρL/A = (1.7×10⁻⁸ × 2)/(1×10⁻⁶) = 0.034 Ω', en: 'R = ρL/A = (1.7×10⁻⁸ × 2)/(1×10⁻⁶) = 0.034 Ω' } },
+                { q: { ar: 'إذا تضاعف طول الموصل مع ثبات باقي العوامل، ماذا يحدث للمقاومة؟', en: 'If the conductor length is doubled while other factors remain constant, what happens to resistance?' }, options: [{ ar: 'تبقى ثابتة', en: 'Remains constant' }, { ar: 'تنقص للنصف', en: 'Decreases to half' }, { ar: 'تتضاعف', en: 'Doubles' }, { ar: 'تزيد 4 أضعاف', en: 'Increases 4 times' }], correct: 2, answer: { ar: 'R ∝ L، فتضاعف L يعني مضاعفة R', en: 'R ∝ L, so doubling L doubles R' } },
+                { q: { ar: 'الموصلات الأومية (Ohmic) هي التي:', en: 'Ohmic conductors are those that:' }, options: [{ ar: 'مقاومتها تتغير مع التيار', en: 'Their resistance changes with current' }, { ar: 'مقاومتها ثابتة وتخضع لقانون أوم', en: 'Have constant resistance and obey Ohm\'s Law' }, { ar: 'لا توصل التيار إطلاقاً', en: 'Do not conduct current at all' }, { ar: 'مقاومتها تساوي صفراً', en: 'Have zero resistance' }], correct: 1, answer: { ar: 'الموصل الأومي: V ∝ I (علاقة خطية، R ثابتة)', en: 'Ohmic conductor: V ∝ I (linear relationship, constant R)' } }
+            ]
+        },
+        {
+            id: 'sec3',
+            title: { ar: '🔹 الجزء الثالث: قانون أوم والقوة الدافعة', en: '🔹 Part 3: Ohm\'s Law & EMF' },
+            questions: [
+                { q: { ar: 'القوة الدافعة الكهربية <span class="math">(ε)</span> للبطارية هي:', en: 'The electromotive force <span class="math">(ε)</span> of a battery is:' }, options: [{ ar: 'الجهد الطرفي عندما يمر تيار', en: 'Terminal voltage when current flows' }, { ar: 'أقصى فرق جهد بين قطبي البطارية عند عدم مرور تيار', en: 'Maximum potential difference between terminals when no current flows' }, { ar: 'المقاومة الداخلية للبطارية', en: 'Internal resistance of the battery' }, { ar: 'التيار المار في الدائرة', en: 'Current flowing in the circuit' }], correct: 1, answer: { ar: 'ε = أقصى جهد (الدائرة مفتوحة، I = 0)', en: 'ε = maximum voltage (open circuit, I = 0)' } },
+                { q: { ar: 'الجهد الطرفي للبطارية <span class="math">(V)</span> يُحسب من العلاقة:', en: 'Terminal voltage <span class="math">(V)</span> of a battery is calculated from:' }, options: [{ ar: '<span class="math">V = ε + Ir</span>', en: '<span class="math">V = ε + Ir</span>' }, { ar: '<span class="math">V = ε - Ir</span>', en: '<span class="math">V = ε - Ir</span>' }, { ar: '<span class="math">V = ε × Ir</span>', en: '<span class="math">V = ε × Ir</span>' }, { ar: '<span class="math">V = ε/Ir</span>', en: '<span class="math">V = ε/Ir</span>' }], correct: 1, answer: { ar: 'V = ε - Ir (حيث r المقاومة الداخلية)', en: 'V = ε - Ir (where r is internal resistance)' } },
+                { q: { ar: 'بطارية قوتها الدافعة <span class="math">12 V</span> ومقاومتها الداخلية <span class="math">0.5 Ω</span>، إذا سحب منها تيار <span class="math">2 A</span>، فما الجهد الطرفي؟', en: 'A battery with EMF <span class="math">12 V</span> and internal resistance <span class="math">0.5 Ω</span>, if it supplies <span class="math">2 A</span>, what is the terminal voltage?' }, options: [{ ar: '<span class="math">13 V</span>', en: '<span class="math">13 V</span>' }, { ar: '<span class="math">12 V</span>', en: '<span class="math">12 V</span>' }, { ar: '<span class="math">11 V</span>', en: '<span class="math">11 V</span>' }, { ar: '<span class="math">10 V</span>', en: '<span class="math">10 V</span>' }], correct: 2, answer: { ar: 'V = ε - Ir = 12 - (2 × 0.5) = 12 - 1 = 11 V', en: 'V = ε - Ir = 12 - (2 × 0.5) = 11 V' } },
+                { q: { ar: 'الجهد الطرفي للبطارية يكون دائماً:', en: 'The terminal voltage of a battery is always:' }, options: [{ ar: 'أكبر من القوة الدافعة الكهربية', en: 'Greater than the EMF' }, { ar: 'مساوياً للقوة الدافعة الكهربية دائماً', en: 'Always equal to the EMF' }, { ar: 'أقل من القوة الدافعة الكهربية عند مرور تيار', en: 'Less than the EMF when current flows' }, { ar: 'صفراً دائماً', en: 'Always zero' }], correct: 2, answer: { ar: 'V = ε - Ir، وبما أن Ir > 0 عند مرور تيار، فإن V < ε', en: 'V = ε - Ir, since Ir > 0 when current flows, V < ε' } }
+            ]
+        },
+        {
+            id: 'sec4',
+            title: { ar: '🔹 الجزء الرابع: القدرة الكهربية والطاقة', en: '🔹 Part 4: Electric Power & Energy' },
+            questions: [
+                { q: { ar: 'القدرة الكهربية <span class="math">(P)</span> تُحسب بجميع العلاقات التالية ما عدا:', en: 'Electric power <span class="math">(P)</span> can be calculated by all of the following EXCEPT:' }, options: [{ ar: '<span class="math">P = VI</span>', en: '<span class="math">P = VI</span>' }, { ar: '<span class="math">P = I²R</span>', en: '<span class="math">P = I²R</span>' }, { ar: '<span class="math">P = V²/R</span>', en: '<span class="math">P = V²/R</span>' }, { ar: '<span class="math">P = V/I</span>', en: '<span class="math">P = V/I</span>' }], correct: 3, answer: { ar: 'P = VI = I²R = V²/R (العلاقة V/I = R وليست قدرة)', en: 'P = VI = I²R = V²/R (V/I = R, not power)' } },
+                { q: { ar: 'مصباح مقاومته <span class="math">240 Ω</span> متصل بمصدر جهد <span class="math">120 V</span>. ما التيار المار فيه؟', en: 'A lamp of resistance <span class="math">240 Ω</span> is connected to <span class="math">120 V</span> source. What is the current?' }, options: [{ ar: '<span class="math">0.5 A</span>', en: '<span class="math">0.5 A</span>' }, { ar: '<span class="math">2 A</span>', en: '<span class="math">2 A</span>' }, { ar: '<span class="math">28800 A</span>', en: '<span class="math">28800 A</span>' }, { ar: '<span class="math">120 A</span>', en: '<span class="math">120 A</span>' }], correct: 0, answer: { ar: 'I = V/R = 120/240 = 0.5 A', en: 'I = V/R = 120/240 = 0.5 A' } },
+                { q: { ar: 'الطاقة الكهربية المستهلكة <span class="math">(E)</span> تُحسب من العلاقة:', en: 'Electric energy consumed <span class="math">(E)</span> is calculated from:' }, options: [{ ar: '<span class="math">E = P/t</span>', en: '<span class="math">E = P/t</span>' }, { ar: '<span class="math">E = Pt</span>', en: '<span class="math">E = Pt</span>' }, { ar: '<span class="math">E = P + t</span>', en: '<span class="math">E = P + t</span>' }, { ar: '<span class="math">E = V/I</span>', en: '<span class="math">E = V/I</span>' }], correct: 1, answer: { ar: 'E = Pt = VIt = I²Rt', en: 'E = Pt = VIt = I²Rt' } },
+                { q: { ar: 'إذا مر تيار <span class="math">3 A</span> في مقاومة <span class="math">10 Ω</span> لمدة <span class="math">5 دقائق</span>، فما الطاقة المستهلكة؟', en: 'If current <span class="math">3 A</span> passes through <span class="math">10 Ω</span> resistance for <span class="math">5 minutes</span>, what is the energy consumed?' }, options: [{ ar: '<span class="math">150 J</span>', en: '<span class="math">150 J</span>' }, { ar: '<span class="math">27000 J</span>', en: '<span class="math">27000 J</span>' }, { ar: '<span class="math">1500 J</span>', en: '<span class="math">1500 J</span>' }, { ar: '<span class="math">450 J</span>', en: '<span class="math">450 J</span>' }], correct: 1, answer: { ar: 'E = I²Rt = 3² × 10 × 300 = 27000 J (5 دقائق = 300 ثانية)', en: 'E = I²Rt = 3² × 10 × 300 = 27000 J (5 min = 300 s)' } }
+            ]
+        },
+        {
+            id: 'sec5',
+            title: { ar: '🔹 الجزء الخامس: تطبيقات شاملة', en: '🔹 Part 5: Comprehensive Applications' },
+            questions: [
+                { q: { ar: 'سخان كهربي قدرته <span class="math">1500 W</span> يعمل على جهد <span class="math">220 V</span>. ما التيار الذي يسحبه؟', en: 'An electric heater of power <span class="math">1500 W</span> operates at <span class="math">220 V</span>. What current does it draw?' }, options: [{ ar: '<span class="math">0.15 A</span>', en: '<span class="math">0.15 A</span>' }, { ar: '<span class="math">6.82 A</span>', en: '<span class="math">6.82 A</span>' }, { ar: '<span class="math">330000 A</span>', en: '<span class="math">330000 A</span>' }, { ar: '<span class="math">1500 A</span>', en: '<span class="math">1500 A</span>' }], correct: 1, answer: { ar: 'I = P/V = 1500/220 ≈ 6.82 A', en: 'I = P/V = 1500/220 ≈ 6.82 A' } },
+                { q: { ar: 'المقاومة النوعية <span class="math">(ρ)</span> تعتمد على:', en: 'Resistivity <span class="math">(ρ)</span> depends on:' }, options: [{ ar: 'أبعاد الموصل فقط', en: 'Conductor dimensions only' }, { ar: 'نوع المادة ودرجة الحرارة', en: 'Material type and temperature' }, { ar: 'التيار المار فقط', en: 'Current flowing only' }, { ar: 'الجهد المطبق فقط', en: 'Applied voltage only' }], correct: 1, answer: { ar: 'ρ خاصية للمادة تتغير مع درجة الحرارة (لا تعتمد على الأبعاد)', en: 'ρ is a material property that varies with temperature (independent of dimensions)' } },
+                { q: { ar: 'وحدة قياس التيار الكهربي في النظام الدولي هي:', en: 'The SI unit of electric current is:' }, options: [{ ar: 'الفولت <span class="math">(V)</span>', en: 'Volt <span class="math">(V)</span>' }, { ar: 'الأمبير <span class="math">(A)</span>', en: 'Ampere <span class="math">(A)</span>' }, { ar: 'الأوم <span class="math">(Ω)</span>', en: 'Ohm <span class="math">(Ω)</span>' }, { ar: 'الكولوم <span class="math">(C)</span>', en: 'Coulomb <span class="math">(C)</span>' }], correct: 1, answer: { ar: 'الأمبير (A) هو الوحدة الأساسية للتيار في النظام الدولي', en: 'Ampere (A) is the base unit of current in SI' } },
+                { q: { ar: 'قانون أوم يُعبَّر عنه بالمعادلة:', en: 'Ohm\'s Law is expressed by the equation:' }, options: [{ ar: '<span class="math">V = I/R</span>', en: '<span class="math">V = I/R</span>' }, { ar: '<span class="math">V = IR</span>', en: '<span class="math">V = IR</span>' }, { ar: '<span class="math">I = R/V</span>', en: '<span class="math">I = R/V</span>' }, { ar: '<span class="math">R = I/V</span>', en: '<span class="math">R = I/V</span>' }], correct: 1, answer: { ar: 'V = IR (الجهد = التيار × المقاومة)', en: 'V = IR (Voltage = Current × Resistance)' } }
+            ]
         }
+    ]
+};
 
-        function toggleAnswers() {
-            document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+let examData;
+let correctAnswersMap = {};
+
+function prepareShuffledExam() {
+    examData = JSON.parse(JSON.stringify(originalExamData));
+    correctAnswersMap = {};
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        section.questions = shuffleArray(section.questions);
+        section.questions.forEach((q) => {
+            const optionsWithCorrect = q.options.map((opt, idx) => ({
+                option: opt,
+                isCorrect: idx === q.correct
+            }));
+            const shuffledOptions = shuffleArray(optionsWithCorrect);
+            q.options = shuffledOptions.map(o => o.option);
+            const newCorrectIndex = shuffledOptions.findIndex(o => o.isCorrect);
+            q.correct = newCorrectIndex;
+            correctAnswersMap[globalIdx] = String.fromCharCode(97 + newCorrectIndex);
+            globalIdx++;
+        });
+    });
+    console.log('✅ تم خلط الأسئلة والخيارات بنجاح');
+}
+
+function reshuffleExam() {
+    prepareShuffledExam();
+    renderExam();
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => r.checked = false);
+    document.getElementById('results-panel').classList.add('hidden');
+    document.querySelectorAll('.correct, .incorrect').forEach(el => {
+        el.classList.remove('correct', 'incorrect');
+    });
+    alert(currentLang === 'ar' ? '🔀 تم إعادة خلط الأسئلة والخيارات بنجاح!' : '🔀 Questions and options have been reshuffled successfully!');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+let currentLang = 'ar';
+let timeRemaining = 3600;
+let timerInterval;
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.body.classList.toggle('en-mode', lang === 'en');
+    document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+        el.textContent = el.getAttribute(`data-${lang}`);
+    });
+    renderExam();
+}
+
+function renderExam() {
+    const container = document.getElementById('exam-content');
+    const labels = {
+        ar: { option: ['أ', 'ب', 'ج', 'د'], answer: '✅ الإجابة:' },
+        en: { option: ['A', 'B', 'C', 'D'], answer: '✅ Answer:' }
+    };
+    const lbl = labels[currentLang];
+    const isRTL = currentLang === 'ar';
+    let html = '';
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        html += `<section class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4 text-indigo-700">${section.title[currentLang]}</h2>
+            <ol class="space-y-4 text-sm">`;
+        section.questions.forEach((q) => {
+            const borderSide = isRTL ? 'border-r-4 pr-4' : 'border-l-4 pl-4';
+            html += `<li class="${borderSide} border-indigo-500 py-2" id="q-${globalIdx}">
+                <strong>${globalIdx}.</strong> ${q.q[currentLang]}<br>`;
+            q.options.forEach((opt, oIdx) => {
+                const radioSide = isRTL ? 'mr-4 ml-2' : 'ml-4 mr-2';
+                html += `<label class="cursor-pointer block mt-1 ${isRTL ? 'mr-4' : 'ml-4'}">
+                    <input type="radio" name="q${globalIdx}" value="${String.fromCharCode(97 + oIdx)}" class="${radioSide}">
+                    ${lbl.option[oIdx]}) ${opt[currentLang]}
+                </label>`;
+            });
+            html += `<div class="answer-box text-green-700 mt-2 font-medium hidden">
+                ${lbl.answer} ${lbl.option[q.correct]}) ${q.options[q.correct][currentLang]} — ${q.answer[currentLang]}
+            </div></li>`;
+            globalIdx++;
+        });
+        html += `</ol></section>`;
+    });
+    container.innerHTML = html;
+}
+
+function startTimer() {
+    document.getElementById('timer-container').style.display = 'block';
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        if (timeRemaining <= 300) timerEl.classList.add('timer-warning');
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert(currentLang === 'ar' ? "انتهى الوقت! سيتم تسليم الامتحان تلقائياً." : "Time's up!");
+            gradeExam();
         }
+    }, 1000);
+}
 
-        function gradeExam() {
-            let correctCount = 0;
-            const correctAnswers = [
-                'a','b','a','b','b',  // Q1-5: التيار الكهربي
-                'a','b','a','c','b',  // Q6-10: المقاومات
-                'b','b','b','c','c',  // Q11-15: قانون أوم والقوة الدافعة
-                'd','a','b','b','b'   // Q16-20: القدرة والطاقة
-            ];
+function toggleAnswers() {
+    document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+}
 
-            // Track section scores
-            let sec1 = 0, sec2 = 0, sec3 = 0, sec4 = 0;
-
-            for(let i=1; i<=20; i++){
-                const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                const li = document.getElementById(`q-${i}`);
-                const isCorrect = selected && selected.value === correctAnswers[i-1];
-                
-                if (isCorrect) {
-                    correctCount++;
-                    li.classList.add('correct');
-                    li.classList.remove('incorrect');
-                    
-                    // Track section
-                    if (i <= 5) sec1++;
-                    else if (i <= 10) sec2++;
-                    else if (i <= 15) sec3++;
-                    else sec4++;
-                } else {
-                    li.classList.add('incorrect');
-                    li.classList.remove('correct');
-                }
-            }
-
-            const score = (correctCount / 20) * 100;
-            const successRate = Math.round(score);
-            
-            document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
-            document.getElementById('res-name').textContent = document.getElementById('studentName').value || 'طالب';
-            document.getElementById('res-date').textContent = new Date().toLocaleDateString('ar-AE');
-            
-            // Update section scores
-            document.getElementById('sec1-score').textContent = `${sec1}/5`;
-            document.getElementById('sec2-score').textContent = `${sec2}/5`;
-            document.getElementById('sec3-score').textContent = `${sec3}/5`;
-            document.getElementById('sec4-score').textContent = `${sec4}/5`;
-            
-            // Update success badge
-            const badge = document.getElementById('success-badge');
-            const percent = document.getElementById('success-percent');
-            percent.textContent = `${successRate}%`;
-            
-            if(successRate >= 90) {
-                badge.textContent = 'ممتاز';
-                badge.className = 'success-badge grade-excellent';
-            } else if(successRate >= 75) {
-                badge.textContent = 'جيد جداً';
-                badge.className = 'success-badge grade-good';
-            } else if(successRate >= 50) {
-                badge.textContent = 'جيد';
-                badge.className = 'success-badge grade-pass';
-            } else {
-                badge.textContent = 'يحتاج تحسين';
-                badge.className = 'success-badge grade-fail';
-            }
-            
-            document.getElementById('results-panel').classList.remove('hidden');
-            document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
-            
-            // Show email button after grading
-            document.getElementById('sendEmailBtn').classList.remove('hidden');
+function gradeExam() {
+    let correctCount = 0;
+    let sec1=0, sec2=0, sec3=0, sec4=0, sec5=0;
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const li = document.getElementById(`q-${i}`);
+        const correctAnswer = correctAnswersMap[i];
+        const isCorrect = selected && selected.value === correctAnswer;
+        if (isCorrect) {
+            correctCount++;
+            li.classList.add('correct');
+            li.classList.remove('incorrect');
+            if (i <= 4) sec1++;
+            else if (i <= 8) sec2++;
+            else if (i <= 12) sec3++;
+            else if (i <= 16) sec4++;
+            else sec5++;
+        } else {
+            li.classList.add('incorrect');
+            li.classList.remove('correct');
         }
+    }
+    const score = (correctCount / 20) * 100;
+    const successRate = Math.round(score);
+    document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
+    document.getElementById('res-name').textContent = document.getElementById('studentName').value || (currentLang === 'ar' ? 'طالب' : 'Student');
+    document.getElementById('res-date').textContent = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-AE' : 'en-US');
+    document.getElementById('sec1-score').textContent = `${sec1}/4`;
+    document.getElementById('sec2-score').textContent = `${sec2}/4`;
+    document.getElementById('sec3-score').textContent = `${sec3}/4`;
+    document.getElementById('sec4-score').textContent = `${sec4}/4`;
+    document.getElementById('sec5-score').textContent = `${sec5}/4`;
+    const badge = document.getElementById('success-badge');
+    document.getElementById('success-percent').textContent = `${successRate}%`;
+    if (currentLang === 'ar') {
+        if (successRate >= 90) { badge.textContent = 'ممتاز'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'جيد جداً'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'جيد'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'يحتاج تحسين'; badge.className = 'success-badge grade-fail'; }
+    } else {
+        if (successRate >= 90) { badge.textContent = 'Excellent'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'Very Good'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'Good'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'Needs Improvement'; badge.className = 'success-badge grade-fail'; }
+    }
+    document.getElementById('results-panel').classList.remove('hidden');
+    document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sendEmailBtn').classList.remove('hidden');
+}
 
-        function sendResultsToEmail() {
-            const btn = document.getElementById('sendEmailBtn');
-            const status = document.getElementById('emailStatus');
-            btn.disabled = true;
-            btn.textContent = '⏳ جاري الإرسال...';
+function sendResultsToEmail() {
+    const btn = document.getElementById('sendEmailBtn');
+    const status = document.getElementById('emailStatus');
+    btn.disabled = true;
+    btn.textContent = currentLang === 'ar' ? '⏳ جاري الإرسال...' : '⏳ Sending...';
+    const name = document.getElementById('studentName').value || 'N/A';
+    const studentClass = document.getElementById('studentClass').value || 'N/A';
+    const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString();
+    const score = document.getElementById('res-total').textContent;
+    const successRate = document.getElementById('success-percent').textContent;
+    const badge = document.getElementById('success-badge').textContent;
+    const sectionNames = {
+        ar: ['التيار وكثافة التيار', 'المقاومات', 'قانون أوم والقوة الدافعة', 'القدرة والطاقة', 'تطبيقات شاملة'],
+        en: ['Current & Density', 'Resistance', 'Ohm\'s Law & EMF', 'Power & Energy', 'Applications']
+    };
+    const currentSectionNames = sectionNames[currentLang];
+    let answersHTML = `<div style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: ${currentLang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h2 style="margin: 0; font-size: 22px;">⚡ ${currentLang === 'ar' ? 'نتيجة امتحان التيار والمقاومات' : 'Current & Resistance Exam Result'}</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">${currentLang === 'ar' ? 'الصف الثاني عشر المتقدم' : 'Grade 12 Advanced'}</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">🔀 ${currentLang === 'ar' ? 'تم خلط الأسئلة تلقائياً' : 'Questions were randomly shuffled'}</p>
+        </div>
+        <div style="background: #eef2ff; padding: 15px; border: 1px solid #c7d2fe;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '👤 الاسم:' : '👤 Name:'}</td><td style="padding: 8px;">${name}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏫 الشعبة:' : '🏫 Class:'}</td><td style="padding: 8px;">${studentClass}</td></tr>
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '📅 التاريخ:' : '📅 Date:'}</td><td style="padding: 8px;">${date}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏆 التقدير:' : '🏆 Grade:'}</td><td style="padding: 8px;">${badge}</td></tr>
+            </table>
+        </div>
+        <div style="background: white; padding: 20px; text-align: center; border-bottom: 2px solid #e5e7eb;">
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #4f46e5;">${score}</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'الدرجة الكلية' : 'Total Score'}</div></div>
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #059669;">${successRate}%</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'نسبة النجاح' : 'Success Rate'}</div></div>
+        </div>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db;">📝 ${currentLang === 'ar' ? 'تفاصيل الإجابات' : 'Answer Details'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #4f46e5; color: white;">
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 8%;">#</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 32%;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الإجابة' : 'Answer'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الصحيحة' : 'Correct'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'النتيجة' : 'Status'}</th>
+            </tr></thead><tbody>`;
+    let sectionScores = [0, 0, 0, 0, 0];
+    let sectionTotals = [4, 4, 4, 4, 4];
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const selectedValue = selected ? selected.value : '-';
+        const correctValue = correctAnswersMap[i];
+        const isCorrect = selectedValue === correctValue;
+        const sectionIndex = Math.floor((i - 1) / 4);
+        if (isCorrect) sectionScores[sectionIndex]++;
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        const statusBg = isCorrect ? '#dcfce7' : '#fee2e2';
+        const statusColor = isCorrect ? '#166534' : '#991b1b';
+        const statusIcon = isCorrect ? '✅' : '❌';
+        const statusText = isCorrect ? (currentLang === 'ar' ? 'صحيح' : 'Correct') : (currentLang === 'ar' ? 'خطأ' : 'Wrong');
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${i}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">${currentSectionNames[sectionIndex]}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${selectedValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">${correctValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; background: ${statusBg}; color: ${statusColor}; font-weight: bold;">${statusIcon} ${statusText}</td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db; border-top: 3px solid #4f46e5;">📊 ${currentLang === 'ar' ? 'تفصيل الأداء' : 'Performance Breakdown'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #7c3aed; color: white;">
+                <th style="padding: 10px; border: 1px solid #6d28d9;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النتيجة' : 'Score'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النسبة' : 'Percentage'}</th>
+            </tr></thead><tbody>`;
+    for (let i = 0; i < 5; i++) {
+        const percentage = Math.round((sectionScores[i] / sectionTotals[i]) * 100);
+        const barColor = percentage >= 75 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444';
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">${currentSectionNames[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #4f46e5;">${sectionScores[i]} / ${sectionTotals[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb;">
+                <div style="background: #e5e7eb; border-radius: 10px; overflow: hidden; height: 20px; position: relative;">
+                    <div style="background: ${barColor}; width: ${percentage}%; height: 100%;"></div>
+                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: bold; color: #1f2937;">${percentage}%</span>
+                </div>
+            </td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 15px; border-radius: 0 0 10px 10px; border-top: 2px solid #f59e0b;">
+            <p style="margin: 0; color: #78350f; text-align: center; font-size: 13px;">⚡ <strong>${currentLang === 'ar' ? 'ملاحظة:' : 'Note:'}</strong> ${currentLang === 'ar' ? 'تم إرسال هذا التقرير تلقائياً من منصة 4U التعليمية | Mr. Mohammed Hesham' : 'This report was automatically sent from 4U Educational Platform | Mr. Mohammed Hesham'}</p>
+        </div></div>`;
+    const templateParams = {
+        to_email: "mohammedhesham872@gmail.com",
+        student_name: name,
+        student_class: studentClass,
+        exam_date: date,
+        total_score: score,
+        success_rate: successRate,
+        grade: badge,
+        answers_table: answersHTML
+    };
+    emailjs.send("service_w15m64i", "template_5b0u2tq", templateParams)
+        .then(() => {
+            status.textContent = currentLang === 'ar' ? '✅ تم إرسال النتائج بنجاح!' : '✅ Results sent successfully!';
+            status.style.color = '#059669';
+            btn.textContent = currentLang === 'ar' ? '✓ تم الإرسال' : '✓ Sent';
+        })
+        .catch(err => {
+            status.textContent = currentLang === 'ar' ? '❌ فشل الإرسال' : '❌ Failed to send';
+            status.style.color = '#dc2626';
+            btn.disabled = false;
+            btn.textContent = currentLang === 'ar' ? '📧 إعادة المحاولة' : '📧 Retry Send';
+            console.error('EmailJS Error:', err);
+        });
+}
 
-            const name = document.getElementById('studentName').value || 'N/A';
-            const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString('ar-AE');
-            const score = document.getElementById('res-total').textContent;
-            const successRate = document.getElementById('success-percent').textContent;
-            const sec1 = document.getElementById('sec1-score').textContent;
-            const sec2 = document.getElementById('sec2-score').textContent;
-            const sec3 = document.getElementById('sec3-score').textContent;
-            const sec4 = document.getElementById('sec4-score').textContent;
-
-            let answersHTML = `<div dir="rtl" style="font-family: 'Cairo', sans-serif;">
-                <h3 style="color:#4F46E5;">📊 تفصيل الأداء:</h3>
-                <ul>
-                    <li>التيار الكهربي وكثافة التيار: ${sec1}</li>
-                    <li>المقاومات الكهربية: ${sec2}</li>
-                    <li>قانون أوم والقوة الدافعة: ${sec3}</li>
-                    <li>القدرة الكهربية والطاقة: ${sec4}</li>
-                </ul>
-                <table style="border:1px solid #e5e7eb; border-collapse:collapse; width:100%; font-size:14px; direction: rtl;">
-                <tr style="background:#4F46E5; color:white;"><th style="border:1px solid #e5e7eb; padding:8px;">السؤال</th><th style="border:1px solid #e5e7eb; padding:8px;">الإجابة المختارة</th><th style="border:1px solid #e5e7eb; padding:8px;">الحالة</th></tr>`;
-            
-            const correctAnswers = ['a','b','a','b','b','a','b','a','c','b','b','b','b','c','c','d','a','b','b','b'];
-            
-            for(let i=1; i<=20; i++) {
-                const sel = document.querySelector(`input[name="q${i}"]:checked`);
-                const isCorrect = sel && sel.value === correctAnswers[i-1];
-                answersHTML += `<tr><td style="border:1px solid #e5e7eb; padding:6px;">${i}</td><td style="border:1px solid #e5e7eb; padding:6px;">${sel ? sel.value : '-'}</td><td style="border:1px solid #e5e7eb; padding:6px; color:${isCorrect ? 'green' : 'red'}">${isCorrect ? '✅ صحيح' : '❌ خطأ'}</td></tr>`;
-            }
-            answersHTML += '</table></div>';
-
-            const templateParams = {
-                to_email: TARGET_EMAIL,
-                student_name: name,
-                exam_date: date,
-                total_score: score,
-                success_rate: successRate,
-                answers_table: answersHTML
-            };
-
-            emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
-                .then(() => {
-                    status.textContent = '✅ تم الإرسال بنجاح! تحقق من Gmail.';
-                    status.style.color = '#059669';
-                    btn.textContent = '✓ تم الإرسال';
-                })
-                .catch(err => {
-                    status.textContent = '❌ فشل الإرسال. تحقق من الإعدادات.';
-                    status.style.color = '#dc2626';
-                    btn.disabled = false;
-                    btn.textContent = '📧 إعادة المحاولة';
-                    console.error('EmailJS Error:', err);
-                });
-        }
-
-        // Initialize timer on page load
-        window.addEventListener('DOMContentLoaded', startTimer);
-    </script>
+window.addEventListener('DOMContentLoaded', () => {
+    prepareShuffledExam();
+    renderExam();
+    startTimer();
+    console.log('🔀 تم خلط الأسئلة والخيارات عشوائياً!');
+});
+</script>
 </body>
 </html>
